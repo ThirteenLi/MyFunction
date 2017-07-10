@@ -11,3 +11,12 @@ function addEvent(elem, type, handler){
         elem["on" + type] = handler;
     }
 }
+//根据id查找元素对象
+function id(sId){
+    return document.getElementById(sId);
+}
+//根据标签查找元素对象
+function tag(sTagName,context){
+    context=context||document;
+    return context.getElementsByTagName(sTagName);
+}
