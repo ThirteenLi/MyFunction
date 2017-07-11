@@ -32,6 +32,24 @@ function tag(sTagName,context){
     return context.getElementsByTagName(sTagName);
 }
 /**
+ * 根据className查找元素
+ * @param className
+ * @param context
+ * @returns {Array}
+ */
+function getbyclass(className,context){
+    context=context||document;
+    var arr=context.getElementsByTagName("*");
+    var result=[];
+    var re=new RegExp("\\b"+className+"\\b");
+    for(var i=0;i<arr.length;i++){
+        if(re.test(arr[i])){
+            result.push(arr[i]);
+        }
+    }
+    return result;
+}
+/**
  * 深克隆封装函数
  * @param obj
  * @returns {{}}
@@ -40,7 +58,7 @@ function cloneObj(obj){
     var newObj={};
     for(var p in obj){
         if(typeof obj[p]==='object'){
-            newObj[p]= cloneObj(obj[p]);
+            newObj[p]= arguments.callee(obj[p]);
         }else{
             newObj[p]=obj[p];
         }
@@ -160,4 +178,12 @@ function $(selector,context){
         default:
             return context.getElementsByTagName(selector);
     }
+}
+/**
+ * 去首尾空格
+ * @param str
+ * @returns {XML|string|void}
+ */
+function trim(str){
+    return str.replace(/^\s+|\s+$/,"");
 }
