@@ -37,7 +37,7 @@ function tag(sTagName,context){
  * @param context
  * @returns {Array}
  */
-function getbyclass(className,context){
+function getByClass(className,context){
     context=context||document;
     var arr=context.getElementsByTagName("*");
     var result=[];
@@ -173,7 +173,7 @@ function $(selector,context){
             return [document.getElementById(selector.substring(1))];
             break;
         case '.':
-            return context.getElementsByClassName(selector.substring(1));
+            return getByClass(selector.substring(1),context);
             break;
         default:
             return context.getElementsByTagName(selector);
@@ -185,5 +185,21 @@ function $(selector,context){
  * @returns {XML|string|void}
  */
 function trim(str){
-    return str.replace(/^\s+|\s+$/,"");
+    return str.replace(/^\s+|\s+$/g,"");
+}
+/**
+ * 获取css样式
+ * @param elem 要获取的对象
+ * @param attr 要获取的样式
+ * @returns {*}
+ */
+function getStyle(elem,attr){
+    if(elem.currentStyle){//IE
+        return elem.currentStyle[attr];
+    }else if(window.getComputedStyle){
+        return getComputedStyle(elem,false)[attr];
+    }else{
+        return elem.style[attr];
+    }
+
 }
