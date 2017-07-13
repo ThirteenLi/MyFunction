@@ -2,15 +2,33 @@
  * 添加事件
  * @param elem 绑定对象
  * @param type 事件类型
- * @param handler 方法
+ * @param fn 方法
  */
-function addEvent(elem, type, handler){
-    if(elem.addEventListener){//能力检测
-        elem.addEventListener(type, handler);
-    }else if(elem.attachEvent){
-        elem.attachEvent("on" + type, handler);
+function addEvent(elem,type,fn){
+    if(addEventListener){
+        elem.addEventListener(type,fn,false);
+    }else if(attachEvent){
+        elem[type+fn]=function(){
+            fn.callee(elem);
+        };
+        elem.attachEvent('on'+type,elem[type+fn]);
     }else{
-        elem["on" + type] = handler;
+        elem['on'+type]=fn;
+    }
+}
+/**
+ * 移除事件
+ * @param elem
+ * @param type
+ * @param fn
+ */
+function removeEvent(elem,type,fn){
+    if(removeEventListener){
+        elem.removeEventListener(type,fn,false);
+    }else if(detachEvent){
+        elem.detachEvent('on'+type,elem[type+fn]);
+    }else{
+        elem['on'+type]=null;
     }
 }
 /**
@@ -66,6 +84,7 @@ function cloneObj(obj){
     return newObj;
 }
 /**
+ * 合并对象
  * @param target 被合并的目标对象
  * @param obj 要合并的对象
  * @return 返回合并的新的对象
@@ -161,25 +180,6 @@ function siblings(elem) {
     return arr;
 }
 /**
- * css查找元素
- * @param selector
- * @param context
- * @returns {*}
- */
-function $(selector,context){
-    context=context||document;
-    switch (selector.charAt(0)){
-        case '#':
-            return [document.getElementById(selector.substring(1))];
-            break;
-        case '.':
-            return getByClass(selector.substring(1),context);
-            break;
-        default:
-            return context.getElementsByTagName(selector);
-    }
-}
-/**
  * 去首尾空格
  * @param str
  * @returns {XML|string|void}
@@ -189,17 +189,114 @@ function trim(str){
 }
 /**
  * 获取css样式
- * @param elem 要获取的对象
- * @param attr 要获取的样式
+ * @param elem 获取的元素对象
+ * @param attr 获取的属性
  * @returns {*}
  */
 function getStyle(elem,attr){
-    if(elem.currentStyle){//IE
+    if(elem.currentStyle){
         return elem.currentStyle[attr];
-    }else if(window.getComputedStyle){//标准浏览器
+    }else if(window.getComputedStyle){
         return getComputedStyle(elem,false)[attr];
     }else{
         return elem.style[attr];
     }
-
 }
+/**
+ * 修改css样式
+ * @param elem
+ * @param attr 对象或属性
+ * @param value  undefined或属性值
+ */
+function css(elem,attr,value){
+    if(value){
+
+        elem.style[attr]=value;
+
+    }else{
+        for(var p in attr){
+            switch (p){
+                case 'width':
+                case 'height':
+                case 'padding':
+                case 'paddingLeft':
+                case 'paddingRight':
+                case 'paddingTop':
+                case 'paddingBottom':
+                    value=/\%/.test(attr[p])?attr[p]:Math.max(parseInt(attr[p]),0)+'px';
+                    break;
+                case 'left':
+                case 'top':
+                case 'bottom':
+                case 'right':
+                case 'margin':
+                case 'marginLeft':
+                case 'marginRight':
+                case 'marginTop':
+                case 'marginBottom':
+                    value=/\%/.test(attr[p])?attr[p]:parseInt(attr[p])+'px';
+                    break;
+                default :
+                    value=attr[p];
+            }
+
+            elem.style[p]=value;
+
+        }
+
+    }
+}
+/**
+ * $函数
+ * @param selector
+ * @param context
+ * @returns {{click: Function, mouseover: Function, mouseout: Function, next: Function, getstyle: Function, css: Function}}
+ */
+function $(selector,context){
+    context=context||document;
+    var elements=[];
+    switch(selector.charAt(0)){
+        case '#':
+            elements=[document.getElementById(selector.substring(1))];
+            break;
+        case '.':
+            elements=getByClass(selector.substring(1),context);
+            break;
+        default :
+            elements=context.getElementsByTagName(selector);
+    }
+    return {
+        click:function(fn){
+            for(var i=0;i<elements.length;i++){
+                addEvent(elements[i],'click',fn);
+            }
+            return this;
+        },
+        mouseover:function(fn){
+            for(var i=0;i<elements.length;i++){
+                addEvent(elements[i],'mouseover',fn);
+            }
+            return this;
+        },
+        mouseout:function(fn){
+            for(var i=0;i<elements.length;i++){
+                addEvent(elements[i],'mouseout',fn);
+            }
+            return this;
+        },
+        next:function(){
+            return next(elements[0]);
+        },
+        getstyle:function(attr){
+            return getStyle(elements[0],attr);
+        },
+        css:function(attr,value){
+            for(var i=0;i<elements.length;i++){
+                css(elements[i],attr,value);
+            }
+            return this;
+        }
+
+    }
+}
+
