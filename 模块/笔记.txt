@@ -1,0 +1,38 @@
+require.js
+
+高内聚 低耦合
+解决文件依赖性加载
+解决模块化开发
+
+<script src="require.js" data-main="index(入口文件,不写.js)"></script>
+index.js:
+require(["sort(调用文件,不写.js)"].function(sort){
+
+});
+
+
+
+sort.js:调用文件
+
+define(["isArray"],function(isArray(接收函数声明)){
+function sort(arr){
+    return arr.sort(function(a,b){
+    return a-b;
+    });
+}
+return sort;
+});
+
+
+isArray.js:
+define([没有参数时可以不写],function(){
+function isArray(arr){
+if(arr instanceof Array){
+    return true;
+}
+else{
+    return false;
+}
+return isArray;//返回函数声明
+};
+});
